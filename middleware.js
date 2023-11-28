@@ -1,29 +1,31 @@
 const jwt = require('jsonwebtoken');
 const config = require('./config');
+const router = require('./routes/user');
 
 const checkToken = (req,res,next) => {
-    let token = req.headers["authorization"];
-    token = token.slice(7,token.length);
-    if(token) {
-        jwt.verify(token,config.key,(err,decoded) => {
-            if (err) {
-                return res.json({
-                    status: false,
-                    msg: 'token is invalid',
-                });
-            } else {
-                req.decoded = decoded;
-                next();
-            }
-        });
-    } else {
-        return res.json({
-            status: false,
-            msg: 'token is not provided',
-        });
+
+    const token = req.headers['authorization'];
+
+    if (!token) {
+        return res.status(403).json({ status: false, msg: 'Token is not provided' });
     }
+
+    const tokenParts = token.split(' ');
+    if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+        return res.status(403).json({ status: false, msg: 'Invalid token format' });
+    }
+
+    const tokenValue = tokenParts[1];
+    jwt.verify(tokenValue, config.key, (err, decoded) => {
+        if (err) {
+            return res.status(403).json({ status: false, msg: 'Token is invalid' });
+        } else {
+            req.decoded = decoded;
+            next();
+        }
+    });
 }
 
-exports = {
-    checkToken: checkToken
-}
+module.exports = {
+    checkToken,
+};
