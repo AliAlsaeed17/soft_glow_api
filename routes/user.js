@@ -51,34 +51,21 @@ router.route('/register').post(async (req,res) => {
     }
 });
 
-router.route('/checkUserName/:userName').get(async (req, res) => {
+router.route('/:id').get(middleware.checkToken, async (req, res) => {
     try {
-        const result = await User.findOne({ userName: req.params.userName });
-        if (result === null) {
-            res.json({ status: false });
-        } else {
-            res.json({ status: true });
-        }
-    } catch (err) {
-        res.status(500).json({ msg: err });
-    }
-});
-
-router.route('/:userName').get(middleware.checkToken, async (req, res) => {
-    try {
-      const result = await User.findOne({ userName: req.params.userName }).exec();
+      const result = await User.findOne({ _id: req.params.id }).exec();
       return res.json({userName: result.userName, email: result.email});
     } catch (err) {
       return res.status(500).json({ msg: err });
     }
   });
 
-router.route('/update/:name').patch(middleware.checkToken, async (req, res) =>  {
+router.route('/update/:id').patch(middleware.checkToken, async (req, res) =>  {
     try {
         const { userName, password ,email} = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
         const updatedUser = await User.findOneAndUpdate(
-          { userName: req.params.name },
+          { _id: req.params.id },
           { $set: { userName:  userName, email: email, password: hashedPassword } },
           { new: true }
         );
@@ -95,10 +82,10 @@ router.route('/update/:name').patch(middleware.checkToken, async (req, res) =>  
       }
 });
 
-router.route('/delete/:name').delete(middleware.checkToken, async (req, res) => {
+router.route('/delete/:id').delete(middleware.checkToken, async (req, res) => {
     try {
       const deletedUser = await User.findOneAndDelete(
-        { userName: req.params.name });
+        { _id: req.params.id });
       if (deletedUser) {
         res.json({ msg: 'User deleted successfully', userName: deletedUser.userName });
       } else {
