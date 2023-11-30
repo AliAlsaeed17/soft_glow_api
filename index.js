@@ -23,6 +23,18 @@ app.use(express.json());  // For Json Data
 const userRoute = require('./routes/user');
 app.use('/user', userRoute); 
 
+// Blog Post Route
+const postRoute = require('./routes/post');
+app.use('/post', postRoute);
+
+// Blog Posts Route
+const postsRoute = require('./routes/posts');
+app.use('/posts', postsRoute);
+
+// Profile Route
+const profileRoute = require('./routes/profile');
+app.use('/profile', profileRoute);
+
 app.route('/').get((req, res) => res.json('Hello World!'));
 // app.listen(port, () => console.log(`Your server is running on port ${port}`));
 
