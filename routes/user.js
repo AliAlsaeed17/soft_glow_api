@@ -1,5 +1,5 @@
 const express = require('express');
-//const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 const User = require('../models/users.model');
 const config = require('../config');
 const middleware = require('../middleware');
@@ -7,21 +7,51 @@ const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
-router.route('/:userName').get(middleware.checkToken, async (req, res) => {
-    try {
-      const result = await User.findOne({ userName: req.params.userName }).exec();
-      const msg = {
-        data: result,
-        username: req.params.userName,
-      };
-      return res.json(msg);
-    } catch (err) {
-      console.error('Error occurred during user lookup:', err);
-      return res.status(500).json({ msg: err });
+router.route('/login').post(async (req, res) => {
+    try{
+        const { userName, password ,email} = req.body;
+        const existingUser = await User.findOne({ userName });
+        if (!existingUser) {
+            return res.status(403).json({ message: 'Invalid username or password' });
+        }
+        const passwordMatch = await bcrypt.compare(password, existingUser.password);
+        if (!passwordMatch) {
+            return res.status(403).json({ message: 'Invalid username or password' });
+        }
+        const token = jwt.sign({ userName , email}, config.key);
+        res.json({ 
+            user: {userName: existingUser.userName, 
+                email: existingUser.email}, 
+            token: token});
+    } catch (error) {
+        res.status(500).json({ message: 'Error logging in' });
     }
-  });
+});
 
-router.route('/checkusername/:userName').get(async (req, res) => {
+router.route('/register').post(async (req,res) => {
+    try {
+        const { userName, password ,email} = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = new User({
+            userName: userName,
+            email: email,
+            password: hashedPassword,
+        });
+        await user.save();
+        const token = jwt.sign(
+            {userName: user.userName, email: user.email},
+            config.key, 
+            {},);
+        res.json({
+            msg: 'success',
+            token: token,
+        });
+    } catch (err) {
+        res.status(500).json({ msg: 'Error occurred during user registration' });
+    }
+});
+
+router.route('/checkUserName/:userName').get(async (req, res) => {
     try {
         const result = await User.findOne({ userName: req.params.userName });
         if (result === null) {
@@ -30,54 +60,53 @@ router.route('/checkusername/:userName').get(async (req, res) => {
             res.json({ status: true });
         }
     } catch (err) {
-        console.error('Error occurred during user lookup:', err);
         res.status(500).json({ msg: err });
     }
 });
 
-router.route('/login').post(async (req, res) => {
+router.route('/:userName').get(middleware.checkToken, async (req, res) => {
     try {
-        const result = await User.findOne({ userName: req.body.userName }).exec();
-        if (result === null) {
-            return res.status(403).json({ msg: 'Incorrect Username' });
-        }
-        if (result.password === req.body.password) {
-            let token = jwt.sign(
-                { userName: req.body.userName },
-                config.key,
-                {}
-            );
-            res.json({
-                token: token,
-                msg: 'success'
-            });
+      const result = await User.findOne({ userName: req.params.userName }).exec();
+      return res.json({userName: result.userName, email: result.email});
+    } catch (err) {
+      return res.status(500).json({ msg: err });
+    }
+  });
+
+router.route('/update/:name').patch(middleware.checkToken, async (req, res) =>  {
+    try {
+        const { userName, password ,email} = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const updatedUser = await User.findOneAndUpdate(
+          { userName: req.params.name },
+          { $set: { userName:  userName, email: email, password: hashedPassword } },
+          { new: true }
+        );
+        if (updatedUser) {
+          res.json({ 
+            msg: 'User successfully updated.', 
+            user: {userName: req.body.userName, email, email: req.body.email} ,
+        });
         } else {
-            res.status(403).json({ msg: 'Incorrect Password' });
+          res.status(404).json({ msg: 'User not found' });
         }
-    } catch (err) {
+      } catch (err) {
         res.status(500).json({ msg: err });
-    }
+      }
 });
 
-router.route('/register').post(async (req,res) => {
+router.route('/delete/:name').delete(middleware.checkToken, async (req, res) => {
     try {
-        const user = new User({
-            userName: req.body.userName,
-            email: req.body.email,
-            password: req.body.password,
-        });
-        await user.save();
-        const token = jwt.sign(
-            {userName: req.body.userName},
-            config.key, 
-            {},);
-        res.json({
-            token: token,
-            msg: 'success',
-        });
-    } catch (err) {
-        res.status(500).json({ msg: 'Error occurred during user registration' });
+      const deletedUser = await User.findOneAndDelete(
+        { userName: req.params.name });
+      if (deletedUser) {
+        res.json({ msg: 'User deleted successfully', userName: deletedUser.userName });
+      } else {
+        res.status(404).json({ msg: 'User not found' });
+      }
+    } catch (error) {
+      res.status(500).json({ msg: error });
     }
-});
+  });
 
 module.exports = router;
