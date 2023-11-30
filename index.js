@@ -7,7 +7,7 @@ const app = express();  // Create expressjs object
 
 // Connect MongoDb
 mongoose.connect('mongodb://0.0.0.0:27017/softGlowDB');  // Local
-// mongoose.connect('mongodb://user:password@cluster0-shard-00-00.mourb.mongodb.net:27017,cluster0-shard-00-01.mourb.mongodb.net:27017,cluster0-shard-00-02.mourb.mongodb.net:27017/BlogDb?ssl=true&replicaSet=atlas-jdfk2u-shard-0&authSource=admin&retryWrites=true&w=majority');
+//mongoose.connect('mongodb+srv://alialsaeed:<AliAlsaeed>@cluster0.8xaqegp.mongodb.net/?retryWrites=true&w=majority');
 // Check connection is established
 const connection = mongoose.connection;
 connection.once('open', () => {
