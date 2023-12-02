@@ -6,8 +6,8 @@ const port = process.env.PORT || 3000;
 const app = express();  // Create expressjs object
 
 // Connect MongoDb
-mongoose.connect('mongodb://0.0.0.0:27017/softGlowDB');  // Local
-//mongoose.connect('mongodb+srv://alialsaeed:<AliAlsaeed>@cluster0.8xaqegp.mongodb.net/?retryWrites=true&w=majority');
+//mongoose.connect('mongodb://0.0.0.0:27017/softGlowDB');  // Local
+mongoose.connect('mongodb+srv://Ali176:alialsaeed@cluster0.46eko5r.mongodb.net/softGlowDB');
 // Check connection is established
 const connection = mongoose.connection;
 connection.once('open', () => {
