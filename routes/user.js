@@ -31,6 +31,7 @@ router.route('/login').post(async (req, res) => {
 router.route('/register').post(async (req,res) => {
     try {
         const { userName, password ,email} = req.body;
+        console.log(req.body);
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = new User({
             userName: userName,
@@ -47,6 +48,7 @@ router.route('/register').post(async (req,res) => {
             token: token,
         });
     } catch (err) {
+      console.log(err);
         res.status(500).json({ msg: 'Error occurred during user registration' });
     }
 });
