@@ -1,6 +1,6 @@
 const express = require('express');
 const Profile = require('../models/profile.model');
-const middleware = require('../middleware');
+const {verifyToken} = require('../middlewares/verify_token');
 const multer = require('multer');
 const path = require('path');
 
@@ -32,7 +32,7 @@ const upload = multer({
     // fileFilter: fileFilter,
 });
 
-router.route('/add').post(middleware.checkToken, async (req, res) => {
+router.route('/add').post(verifyToken, async (req, res) => {
     try {
       const profile = new Profile({
         userName: req.body.userName,
@@ -49,7 +49,7 @@ router.route('/add').post(middleware.checkToken, async (req, res) => {
     }
 });
 
-router.route('/update/:id').patch(middleware.checkToken, async (req, res) => {
+router.route('/update/:id').patch(verifyToken, async (req, res) => {
     try {
       let profile = await Profile.findOne({ _id: req.params.id });
       if (profile === null) {
@@ -78,7 +78,7 @@ router.route('/update/:id').patch(middleware.checkToken, async (req, res) => {
     }
   });
 
-router.route('/:id').get(middleware.checkToken, async (req, res) => {
+router.route('/:id').get(verifyToken, async (req, res) => {
     try {
       const result = await Profile.findOne({ _id: req.params.id });
       if (result === null) {

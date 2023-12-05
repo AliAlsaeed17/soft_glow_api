@@ -1,6 +1,6 @@
 const express = require('express');
 const Post = require('../models/post.model');
-const middleware = require('../middleware');
+const {verifyToken} = require('../middlewares/verify_token');
 const multer = require('multer');
 const path = require('path');
 const { json } = require('express/lib/response');
@@ -24,7 +24,7 @@ const upload = multer({
     },
 });
 
-router.route('/add').post(middleware.checkToken, upload.single('img'), async (req, res) => {
+router.route('/add').post(verifyToken, upload.single('img'), async (req, res) => {
     try {
       const { userName, title ,body} = req.body;
       const post = Post({
@@ -45,7 +45,7 @@ router.route('/add').post(middleware.checkToken, upload.single('img'), async (re
     }
   });
 
-router.route('/update/:id').patch(middleware.checkToken,upload.single('img') ,async (req, res) => {
+router.route('/update/:id').patch(verifyToken,upload.single('img') ,async (req, res) => {
     try {
       const { userName, title ,body} = req.body;
       const updatedPost = await Post.findOneAndUpdate(
@@ -76,7 +76,7 @@ router.route('/update/:id').patch(middleware.checkToken,upload.single('img') ,as
     }
 });
 
-router.route('/delete/:id').delete(middleware.checkToken, async (req, res) => {
+router.route('/delete/:id').delete(verifyToken, async (req, res) => {
     try {
       const result = await Post.findOneAndDelete({_id: req.params.id });
       if (result) {

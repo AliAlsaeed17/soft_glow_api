@@ -1,10 +1,10 @@
 const express = require('express');
 const Post = require('../models/post.model');
-const middleware = require('../middleware');
+const {verifyToken} = require('../middlewares/verify_token');
 
 const router = express.Router();
 
-router.route('/:name').get(middleware.checkToken, async (req, res) => {
+router.route('/:name').get(verifyToken, async (req, res) => {
     try {
       const result = await Post.find({ userName: req.params.name });
       if (!result || result.length === 0) {
