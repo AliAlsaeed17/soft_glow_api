@@ -1,6 +1,6 @@
 const express = require('express');
 const Profile = require('../models/profile.model');
-const {verifyToken} = require('../middlewares/verify_token');
+const verifyToken = require('../middlewares/verify_token');
 const multer = require('multer');
 const path = require('path');
 

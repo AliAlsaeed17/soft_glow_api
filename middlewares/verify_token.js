@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const router = require('../routes/user.route');
 
 const verifyToken = async (req, res, next) => {
     try {
@@ -26,4 +25,4 @@ const verifyToken = async (req, res, next) => {
     }
   };
 
-module.exports = {verifyToken};
+module.exports = verifyToken;
